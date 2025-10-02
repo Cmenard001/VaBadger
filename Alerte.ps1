@@ -13,14 +13,14 @@ public class Keyboard {
 }
 "@
 
-# Constante pour la touche Échap
+# Constante pour la touche Echap
 $VK_ESCAPE = 0x1B
 
-# --- Fonction : crée un formulaire plein écran ---
+# --- Fonction : cree un formulaire plein ecran ---
 function Flash-Screen {
     $forms = @()
 
-    # Créer un formulaire pour chaque écran
+    # Creer un formulaire pour chaque ecran
     foreach ($screen in [System.Windows.Forms.Screen]::AllScreens) {
         $form = New-Object System.Windows.Forms.Form
         $form.FormBorderStyle = 'None'
@@ -53,7 +53,7 @@ function Flash-Screen {
         $instructionLabel.Height = 50
         $form.Controls.Add($instructionLabel)
 
-        # Ajouter gestion des événements clavier
+        # Ajouter gestion des evenements clavier
         $form.KeyPreview = $true
         $form.Add_KeyDown({
             param($sender, $e)
@@ -62,7 +62,7 @@ function Flash-Screen {
             }
         })
 
-        # Ajouter gestion des événements de focus
+        # Ajouter gestion des evenements de focus
         $form.Add_Activated({
             $script:exitRequested = $false
         })
@@ -78,15 +78,15 @@ function Play-AlertSound {
     [console]::beep(1000, 300)
 }
 
-# --- Début ---
+# --- Debut ---
 $forms = Flash-Screen
 $script:exitRequested = $false
 $startTime = Get-Date
 $flashCount = 0
 
-# Boucle jusqu'à Échap ou timeout (5 minutes max)
+# Boucle jusqu'a Echap ou timeout (5 minutes max)
 while ($true) {
-    # Vérifier Escape en premier
+    # Verifier Escape en premier
     $key1 = [Keyboard]::GetAsyncKeyState($VK_ESCAPE)
     if (($key1 -band 0x8000) -or $script:exitRequested) {
         break
@@ -99,7 +99,7 @@ while ($true) {
     }
     [System.Windows.Forms.Application]::DoEvents()
 
-    # Vérifier Escape pendant l'affichage
+    # Verifier Escape pendant l'affichage
     $key1 = [Keyboard]::GetAsyncKeyState($VK_ESCAPE)
     if (($key1 -band 0x8000) -or $script:exitRequested) {
         break
@@ -107,7 +107,7 @@ while ($true) {
 
     Play-AlertSound
 
-    # Vérifications multiples pendant le délai
+    # Verifications multiples pendant le delai
     for ($i = 0; $i -lt 25; $i++) {
         Start-Sleep -Milliseconds 10
         [System.Windows.Forms.Application]::DoEvents()
@@ -126,7 +126,7 @@ while ($true) {
         $form.Hide()
     }
 
-    # Vérifications pendant la pause
+    # Verifications pendant la pause
     for ($i = 0; $i -lt 10; $i++) {
         Start-Sleep -Milliseconds 10
         [System.Windows.Forms.Application]::DoEvents()
@@ -140,7 +140,7 @@ while ($true) {
         break
     }
 
-    # Timeout de sécurité (5 minutes)
+    # Timeout de securite (5 minutes)
     if ((Get-Date) - $startTime -gt [TimeSpan]::FromMinutes(5)) {
         break
     }
