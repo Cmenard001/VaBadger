@@ -135,7 +135,7 @@ if ($trigger.StartBoundary) {
 }
 
 # Creer les parametres de la tache
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 
 # Creer le principal avec l'utilisateur original
 Write-Host "Utilisateur pour la tache: $OriginalUser" -ForegroundColor Gray
