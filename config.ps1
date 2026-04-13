@@ -27,7 +27,8 @@ if (-not $isAdmin) {
         $scriptPath = $MyInvocation.MyCommand.Path
         Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -OriginalUser `"$OriginalUser`"" -Verb RunAs
         exit
-    } catch {
+    }
+    catch {
         Write-Host "Erreur: Impossible d'obtenir les droits administrateur." -ForegroundColor Red
         Write-Host "Veuillez relancer PowerShell en tant qu'administrateur manuellement." -ForegroundColor Yellow
         pause
@@ -61,7 +62,8 @@ do {
     $modeInput = Read-Host "Votre choix (1 ou 2)"
     if ($modeInput -eq "1" -or $modeInput -eq "2") {
         $modeValide = $true
-    } else {
+    }
+    else {
         Write-Host "Erreur: Veuillez choisir 1 ou 2" -ForegroundColor Red
         $modeValide = $false
     }
@@ -74,7 +76,8 @@ Write-Host ""
 do {
     if ($executionQuotidienne) {
         $heureInput = Read-Host "A quelle heure souhaitez-vous executer l'alerte quotidienne? (format HH:MM, ex: 14:30)"
-    } else {
+    }
+    else {
         $heureInput = Read-Host "A quelle heure souhaitez-vous executer l'alerte aujourd'hui? (format HH:MM, ex: 14:30)"
     }
 
@@ -86,11 +89,13 @@ do {
 
         if ($heure -ge 0 -and $heure -le 23 -and $minute -ge 0 -and $minute -le 59) {
             $heureValide = $true
-        } else {
+        }
+        else {
             Write-Host "Erreur: L'heure doit etre entre 00:00 et 23:59" -ForegroundColor Red
             $heureValide = $false
         }
-    } else {
+    }
+    else {
         Write-Host "Erreur: Format invalide. Utilisez le format HH:MM (ex: 14:30)" -ForegroundColor Red
         $heureValide = $false
     }
@@ -116,10 +121,17 @@ $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfil
 if ($executionQuotidienne) {
     # Tous les jours a l'heure specifiee
     $trigger = New-ScheduledTaskTrigger -Daily -At $heureInput
-} else {
+}
+else {
     # Aujourd'hui a l'heure specifiee (execution unique)
     $dateExecution = Get-Date -Hour $heure -Minute $minute -Second 0
     $trigger = New-ScheduledTaskTrigger -Once -At $dateExecution
+}
+
+# Correction des changements d'heure (DST)
+# On retire le decalage de fuseau horaire de StartBoundary pour forcer l'utilisation de l'heure locale courante
+if ($trigger.StartBoundary) {
+    $trigger.StartBoundary = [datetime]::Parse($trigger.StartBoundary).ToString("yyyy-MM-ddTHH:mm:ss")
 }
 
 # Creer les parametres de la tache
@@ -153,7 +165,8 @@ try {
         Write-Host "  - Nom de la tache: $taskName" -ForegroundColor White
         if ($executionQuotidienne) {
             Write-Host "  - Frequence: Tous les jours a $heureInput" -ForegroundColor White
-        } else {
+        }
+        else {
             Write-Host "  - Frequence: Aujourd'hui a $heureInput (execution unique)" -ForegroundColor White
         }
         Write-Host "  - Script execute: $alertScriptPath" -ForegroundColor White
@@ -166,14 +179,16 @@ try {
         $schtaskCheck = schtasks /query /tn "$taskName" 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Host "Verification schtasks: OK" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "Verification schtasks: ECHEC" -ForegroundColor Red
             Write-Host "Output: $schtaskCheck" -ForegroundColor Red
         }
 
         Write-Host ""
         Write-Host "Vous pouvez modifier ou supprimer cette tache dans le Planificateur de taches Windows." -ForegroundColor Gray
-    } else {
+    }
+    else {
         Write-Host ""
         Write-Host "ERREUR: La tache a ete enregistree mais n'a pas pu etre verifiee." -ForegroundColor Red
         Write-Host "Verifiez que vous avez bien les droits administrateur." -ForegroundColor Yellow
@@ -182,7 +197,8 @@ try {
         exit 1
     }
 
-} catch {
+}
+catch {
     Write-Host ""
     Write-Host "Erreur lors de la creation de la tache planifiee:" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
